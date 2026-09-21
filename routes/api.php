@@ -20,5 +20,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/pelanggans', [PelangganController::class, 'index']);
-Route::post('/kunjungan/update-status/{id}', [TugasKunjunganController::class, 'updateStatus']);
+

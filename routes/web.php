@@ -30,41 +30,44 @@ Route::middleware('auth')->group(function () {
     })->name('home');
 
 
-    Route::get('/pelanggans', [PelangganController::class, 'pelanggan'])->name('pelanggan.index');
-    Route::post('/pelanggan/update', [PelangganController::class, 'update'])->name('pelanggan.update');
-    Route::post('/pelanggan/store', [PelangganController::class, 'store'])->name('pelanggan.store');
-    Route::delete('/pelanggan/destroy/{id}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
+    // ----------------------------------------------------
+    // ACCESSIBLE BY ALL AUTHENTICATED USERS (Admin & Petugas)
+    // ----------------------------------------------------
+    Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+    Route::post('/profile/update', [DashboardController::class, 'profileUpdate'])->name('profile.update');
 
-    Route::post('/pelanggan/import', [PelangganController::class, 'import']);
-    Route::get('/pelanggan/import/progress/{key}', [PelangganController::class, 'progress']);
-
-
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
-
-    Route::get('/profile', [DashboardController::class, 'profile'])
-        ->name('profile');
-
-    Route::post('/profile/update', [DashboardController::class, 'profileUpdate'])
-        ->name('profile.update');
-
-    Route::get('/tugas-kunjungan', [TugasKunjunganController::class, 'index'])
-        ->name('tugas_kunjungan.index');
-    Route::post('/tugas-kunjungan', [TugasKunjunganController::class, 'store'])
-        ->name('tugas_kunjungan.store');
-    Route::get('/tugas-kunjungan/daftar-tugas', [TugasKunjunganController::class, 'show'])
-        ->name('tugas_kunjungan.show');
-    Route::get('/tugas-kunjungan/detail/{id}', [TugasKunjunganController::class, 'detail'])
-        ->name('tugas_kunjungan.detail');
-    Route::delete('/tugas-kunjungan/{id}', [TugasKunjunganController::class, 'destroy'])
-        ->name('tugas_kunjungan.destroy');
-    Route::get('/tugas-kunjungan/map/{id?}', [TugasKunjunganController::class, 'map'])
-        ->name('tugas_kunjungan.map');
-
+    Route::get('/tugas-kunjungan/daftar-tugas', [TugasKunjunganController::class, 'show'])->name('tugas_kunjungan.show');
+    Route::get('/tugas-kunjungan/detail/{id}', [TugasKunjunganController::class, 'detail'])->name('tugas_kunjungan.detail');
+    Route::get('/tugas-kunjungan/map/{id?}', [TugasKunjunganController::class, 'map'])->name('tugas_kunjungan.map');
     Route::get('/tugas-kunjungan/pelanggans/{id?}', [TugasKunjunganController::class, 'pelanggans']);
-    Route::get('/tugas-kunjungan/laporan', [TugasKunjunganController::class, 'laporan'])->name('laporan');
-    Route::get('/laporan/data', [TugasKunjunganController::class, 'laporanData'])->name('laporan.data');
-    Route::get('/laporan/print', [TugasKunjunganController::class, 'laporanPrint'])->name('laporan.print');
+    Route::post('/api/kunjungan/update-status/{id}', [TugasKunjunganController::class, 'updateStatus']);
+
+
+    // ----------------------------------------------------
+    // ADMIN ONLY ROUTES
+    // ----------------------------------------------------
+    Route::middleware('admin')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        // Pelanggan Management
+        Route::get('/pelanggans', [PelangganController::class, 'pelanggan'])->name('pelanggan.index');
+        Route::post('/pelanggan/update', [PelangganController::class, 'update'])->name('pelanggan.update');
+        Route::post('/pelanggan/store', [PelangganController::class, 'store'])->name('pelanggan.store');
+        Route::delete('/pelanggan/destroy/{id}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
+        Route::post('/pelanggan/import', [PelangganController::class, 'import']);
+        Route::get('/pelanggan/import/progress/{key}', [PelangganController::class, 'progress']);
+        Route::get('/api/pelanggans', [PelangganController::class, 'index']);
+
+        // Tugas Kunjungan Management
+        Route::get('/tugas-kunjungan', [TugasKunjunganController::class, 'index'])->name('tugas_kunjungan.index');
+        Route::post('/tugas-kunjungan', [TugasKunjunganController::class, 'store'])->name('tugas_kunjungan.store');
+        Route::delete('/tugas-kunjungan/{id}', [TugasKunjunganController::class, 'destroy'])->name('tugas_kunjungan.destroy');
+        
+        // Laporan
+        Route::get('/tugas-kunjungan/laporan', [TugasKunjunganController::class, 'laporan'])->name('laporan');
+        Route::get('/laporan/data', [TugasKunjunganController::class, 'laporanData'])->name('laporan.data');
+        Route::get('/laporan/print', [TugasKunjunganController::class, 'laporanPrint'])->name('laporan.print');
+    });
 });
 
 
