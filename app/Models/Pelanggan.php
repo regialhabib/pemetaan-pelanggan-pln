@@ -8,4 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Pelanggan extends Model
 {
     use HasFactory;
+
+    protected $table = 'pelanggans';
+
+    protected $fillable = [
+        'id',
+        'id_pelanggan',
+        'nama',
+        'alamat',
+        'latitude',
+        'longitude',
+        'golongan_tarif',
+        'daya'
+    ];
 }

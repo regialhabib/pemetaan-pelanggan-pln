@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\TugasKunjunganController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PelangganController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,4 +20,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/pelanggans', [PelangganController::class, 'index']); 
+Route::get('/pelanggans', [PelangganController::class, 'index']);
+Route::post('/kunjungan/update-status/{id}', [TugasKunjunganController::class, 'updateStatus']);

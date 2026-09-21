@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\TugasKunjunganController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,22 +19,67 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/', function () {
+        if(Auth::user()->role == 'petugas') {
+            return redirect()->route('tugas_kunjungan.map');
+        }
+        return view('map');
+    })->name('home');
+
+
+    Route::get('/pelanggans', [PelangganController::class, 'pelanggan'])->name('pelanggan.index');
+    Route::post('/pelanggan/update', [PelangganController::class, 'update'])->name('pelanggan.update');
+    Route::post('/pelanggan/store', [PelangganController::class, 'store'])->name('pelanggan.store');
+    Route::delete('/pelanggan/destroy/{id}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
+
+    Route::post('/pelanggan/import', [PelangganController::class, 'import']);
+    Route::get('/pelanggan/import/progress/{key}', [PelangganController::class, 'progress']);
+
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
+
+    Route::get('/profile', [DashboardController::class, 'profile'])
+        ->name('profile');
+
+    Route::post('/profile/update', [DashboardController::class, 'profileUpdate'])
+        ->name('profile.update');
+
+    Route::get('/tugas-kunjungan', [TugasKunjunganController::class, 'index'])
+        ->name('tugas_kunjungan.index');
+    Route::post('/tugas-kunjungan', [TugasKunjunganController::class, 'store'])
+        ->name('tugas_kunjungan.store');
+    Route::get('/tugas-kunjungan/daftar-tugas', [TugasKunjunganController::class, 'show'])
+        ->name('tugas_kunjungan.show');
+    Route::get('/tugas-kunjungan/detail/{id}', [TugasKunjunganController::class, 'detail'])
+        ->name('tugas_kunjungan.detail');
+    Route::delete('/tugas-kunjungan/{id}', [TugasKunjunganController::class, 'destroy'])
+        ->name('tugas_kunjungan.destroy');
+    Route::get('/tugas-kunjungan/map/{id?}', [TugasKunjunganController::class, 'map'])
+        ->name('tugas_kunjungan.map');
+
+    Route::get('/tugas-kunjungan/pelanggans/{id?}', [TugasKunjunganController::class, 'pelanggans']);
+    Route::get('/tugas-kunjungan/laporan', [TugasKunjunganController::class, 'laporan'])->name('laporan');
+    Route::get('/laporan/data', [TugasKunjunganController::class, 'laporanData'])->name('laporan.data');
+    Route::get('/laporan/print', [TugasKunjunganController::class, 'laporanPrint'])->name('laporan.print');
 });
-// routes/web.php
-Route::get('/test-assets', function () {
-    return response()->json([
-        'asset_url' => asset('css/app.css'),
-        'public_path' => public_path('css/app.css'),
-        'file_exists' => file_exists(public_path('css/app.css')),
-        'file_size' => file_exists(public_path('css/app.css'))
-            ? filesize(public_path('css/app.css'))
-            : 0,
-        'last_modified' => file_exists(public_path('css/app.css'))
-            ? date('Y-m-d H:i:s', filemtime(public_path('css/app.css')))
-            : null,
-        'app_url' => config('app.url'),
-        'current_url' => url()->current(),
-    ]);
-});
+
+
+
+Route::get('/login', [LoginController::class, 'login'])
+    ->name('login');
+
+Route::post('/login', [LoginController::class, 'authenticate'])
+    ->name('login.authenticate');
+
+Route::get('/logout', [LoginController::class, 'logout'])
+    ->name('logout');
+
+Route::get('/register', [RegisterController::class, 'register'])
+    ->name('register');
+
+Route::post('/register', [RegisterController::class, 'store'])
+    ->name('register.store');
