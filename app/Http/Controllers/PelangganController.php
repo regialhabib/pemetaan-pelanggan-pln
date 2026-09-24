@@ -31,6 +31,7 @@ class PelangganController extends Controller
                 'id',
                 'id_pelanggan',
                 'nama',
+                'no_hp',
                 'alamat',
                 'latitude',
                 'longitude',
@@ -63,6 +64,7 @@ class PelangganController extends Controller
         $validated = $request->validate([
             'id' => 'required',
             'nama' => 'required',
+            'no_hp' => 'nullable|string|max:20',
             'alamat' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
@@ -87,6 +89,7 @@ class PelangganController extends Controller
         $validated = $request->validate([
             'id_pelanggan' => 'required',
             'nama' => 'required',
+            'no_hp' => 'nullable|string|max:20',
             'alamat' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',

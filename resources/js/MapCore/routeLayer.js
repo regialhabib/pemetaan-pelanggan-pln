@@ -81,7 +81,7 @@ function tampilkanRuteOSRM(map, data, dataPelangganAsli) {
     
     let route = data.trips[0].geometry;
     routeLayer = L.geoJSON(route, {
-        style: { color: "#3051d3", weight: 5, opacity: 0.7 },
+        style: { color: "#556ee6", weight: 5, opacity: 0.7 },
     }).addTo(map);
 
     const total = data.waypoints.length;
@@ -100,8 +100,8 @@ function tampilkanRuteOSRM(map, data, dataPelangganAsli) {
         let lng = wp.location[0];
         let nomorKunjungan = wp.waypoint_index;
         
-        let warnaMarker = dataP.status_kunjungan === STATUS_KUNJUNGAN.SUDAH ? "#28a745" : 
-                         (dataP.status_kunjungan === STATUS_KUNJUNGAN.DIPROSES ? "#ffc107" : "#3051d3");
+        let warnaMarker = dataP.status_kunjungan === STATUS_KUNJUNGAN.SUDAH ? "#34c38f" : 
+                         (dataP.status_kunjungan === STATUS_KUNJUNGAN.DIPROSES ? "#f1b44c" : "#556ee6");
                          
         let icon = L.divIcon({
             className: "custom-marker",

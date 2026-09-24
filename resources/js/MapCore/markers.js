@@ -13,6 +13,7 @@ let markers = [];
 let heatmapLayer;
 let mapRef;
 let activeHighlightRing = null;
+let switchControlInstance = null;
 
 
 export function addMarkersBatch(map, pelangganList) {
@@ -22,46 +23,111 @@ export function addMarkersBatch(map, pelangganList) {
     if (markersLayer) {
         markersLayer.clearLayers();
     }
+    markers = [];
 
-    markersLayer = L.layerGroup();
+    markersLayer = L.markerClusterGroup({
+        chunkedLoading: true,
+        maxClusterRadius: 50,
+        disableClusteringAtZoom: 16,
+        spiderfyOnMaxZoom: true
+    });
     updateCounter(total, total); // Final count
 
+    const markersToAdd = [];
     for (let i = 0; i < total; i++) {
         const p = pelangganList[i];
 
-        const marker = L.marker([p.latitude, p.longitude]).bindPopup(
+        let markerOptions = {};
+        if (p.status_kunjungan) {
+            let color = "#f46a6a"; // Default: belum (merah)
+            let iconClass = "bx-x";
+            
+            if (p.status_kunjungan === "sudah") {
+                color = "#34c38f"; // hijau
+                iconClass = "bx-check-double";
+            } else if (p.status_kunjungan === "diproses") {
+                color = "#f1b44c"; // kuning
+                iconClass = "bx-time-five";
+            }
+            
+            markerOptions.icon = L.divIcon({
+                className: 'custom-status-icon',
+                html: `<div style="background-color: ${color}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 2px solid white; box-shadow: 0 3px 6px rgba(0,0,0,0.3);">
+                        <i class="bx ${iconClass} font-size-18"></i>
+                       </div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -16]
+            });
+        }
+
+        const marker = L.marker([p.latitude, p.longitude], markerOptions).bindPopup(
             renderPopupHTML(p),
             { closeButton: true },
         );
 
         marker.data = p; 
         markers.push(marker);
-        markersLayer.addLayer(marker);
+        markersToAdd.push(marker);
     }
+    
+    markersLayer.addLayers(markersToAdd);
 
     heatmapLayer = initHeatmapLayer(pelangganList);
 
-    const baseLayers = {
-        "Mode Marker (Detail)": markersLayer,
-        "Mode Heatmap (Agregasi)": heatmapLayer,
-    };
-
-    L.control
-        .layers(baseLayers, null, {
-            collapsed: true,
-            position: "bottomleft",
-        })
-        .addTo(map);
-
-    map.on("overlayadd", (e) => {
-        if (e.layer === heatmapLayer) {
-            map.removeLayer(markersLayer);
-        }
-
-        if (e.layer === markersLayer) {
-            map.removeLayer(heatmapLayer);
+    // Tambahkan kontrol Switch kustom untuk Heatmap
+    const SwitchControl = L.Control.extend({
+        options: { position: "bottomleft" },
+        onAdd: function () {
+            const div = L.DomUtil.create("div", "leaflet-control shadow-lg");
+            div.style.fontFamily = "inherit";
+            div.style.borderRadius = "30px";
+            div.style.backgroundColor = "rgba(30, 41, 59, 0.94)";
+            div.style.backdropFilter = "blur(10px)";
+            div.style.WebkitBackdropFilter = "blur(10px)";
+            div.style.border = "1px solid rgba(255, 255, 255, 0.15)";
+            div.style.padding = "8px 18px";
+            div.style.marginBottom = "25px";
+            div.style.marginLeft = "15px";
+            div.style.transition = "all 0.3s ease";
+            
+            div.innerHTML = `
+                <div class="form-check form-switch form-switch-md mb-0 d-flex align-items-center" style="padding-left: 2.2em;">
+                    <input class="form-check-input" type="checkbox" id="heatmapSwitch" style="cursor: pointer; margin-left: -2.2em;">
+                    <label class="form-check-label fw-medium ms-2 mb-0 font-size-13 text-white" for="heatmapSwitch" style="cursor: pointer;">
+                        Heatmap
+                    </label>
+                </div>
+            `;
+            
+            L.DomEvent.disableClickPropagation(div);
+            
+            const checkbox = div.querySelector("#heatmapSwitch");
+            checkbox.addEventListener("change", function(e) {
+                if (e.target.checked) {
+                    mapRef.removeLayer(markersLayer);
+                    if (heatmapLayer) {
+                        mapRef.addLayer(heatmapLayer);
+                        renderHeatmapIfActive(mapRef);
+                    }
+                } else {
+                    if (heatmapLayer) mapRef.removeLayer(heatmapLayer);
+                    mapRef.addLayer(markersLayer);
+                }
+            });
+            
+            return div;
         }
     });
+    
+    if (switchControlInstance) {
+        map.removeControl(switchControlInstance);
+    }
+    switchControlInstance = new SwitchControl();
+    map.addControl(switchControlInstance);
+    
+    // Tampilkan marker secara default
+    map.addLayer(markersLayer);
 
     map.on("zoomend", () => {
         if (map.hasLayer(heatmapLayer)) {
@@ -78,6 +144,15 @@ export function addMarkersBatch(map, pelangganList) {
     });
 
     map.addLayer(markersLayer);
+
+    const initialTotalDaya = pelangganList.reduce((sum, p) => sum + (Number(p.daya) || 0), 0);
+    window.dispatchEvent(new CustomEvent("pelangganFilterUpdated", {
+        detail: {
+            total: total,
+            filtered: total,
+            totalDaya: initialTotalDaya
+        }
+    }));
 }
 
 export function filterPelanggan({
@@ -89,6 +164,10 @@ export function filterPelanggan({
         return;
     }
     const pelangganFiltered = [];
+    const validMarkers = [];
+
+    markersLayer.clearLayers();
+
     markers.forEach((marker) => {
         const p = marker.data;
 
@@ -97,17 +176,54 @@ export function filterPelanggan({
         const matchMax = maxDaya === null || p.daya <= maxDaya;
 
         if (matchTarif && matchMin && matchMax) {
-            markersLayer.addLayer(marker);
+            validMarkers.push(marker);
             pelangganFiltered.push(p);
-        } else {
-            markersLayer.removeLayer(marker);
         }
     });
+
+    markersLayer.addLayers(validMarkers);
     // UPDATE DATA HEATMAP (AMAN)
     setHeatmapData(pelangganFiltered);
 
     // RENDER JIKA AKTIF
     renderHeatmapIfActive(mapRef);
+
+    // Dispatch event untuk update widget counter UI
+    const totalDayaSum = pelangganFiltered.reduce((sum, p) => sum + (Number(p.daya) || 0), 0);
+    window.dispatchEvent(new CustomEvent("pelangganFilterUpdated", {
+        detail: {
+            total: markers.length,
+            filtered: pelangganFiltered.length,
+            totalDaya: totalDayaSum
+        }
+    }));
+
+    return {
+        total: markers.length,
+        filtered: pelangganFiltered.length,
+        totalDaya: totalDayaSum
+    };
+}
+
+export function resetMapView() {
+    if (!mapRef) return;
+    
+    // Gunakan array markers asli untuk menghitung bounds yang valid
+    if (markers && markers.length > 0) {
+        try {
+            const group = L.featureGroup(markers);
+            const bounds = group.getBounds();
+            if (bounds && bounds.isValid()) {
+                mapRef.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                return;
+            }
+        } catch (e) {
+            console.error("Gagal menghitung bounds marker:", e);
+        }
+    }
+    
+    // Fallback jika tidak ada marker
+    mapRef.setView([-1.6161, 103.583], 14);
 }
 
 export function switchToMarkerMode() {
@@ -144,7 +260,7 @@ export function highlightMarker(marker) {
     // buat ring highlight
     activeHighlightRing = L.circleMarker(latlng, {
         radius: 18,
-        color: "#0d6efd",
+        color: "#556ee6",
         weight: 3,
         fill: false,
         opacity: 1,

@@ -1,3 +1,4 @@
+import '../MapCore/map-vendor.js';
 import { initMap } from "../MapCore/mapInit.js";
 import { fetchPelanggan } from "../Services/api.js";
 import { addMarkersBatch } from "../MapCore/markers.js";
@@ -7,8 +8,7 @@ import { showSimpleErrorToast } from "../UI/toast.js";
 import { initPelangganFilter } from "../UI/filter.js";
 import { initSearch } from "../UI/search.js";
 import { bindPopupEvents } from "../UI/popup.js";
-import { addMyLocationControl, addClearRouteControl } from "../UI/controls.js";
-
+import { addResetViewControl } from "../UI/controls.js";
 let map;
 
 async function loadMapPage() {
@@ -30,8 +30,7 @@ async function loadMapPage() {
         updateProgress(100, "Semua data berhasil dimuat");
         
         initSearch(map);
-        addMyLocationControl(map);
-        addClearRouteControl(map);
+        addResetViewControl(map);
     } catch (err) {
         console.error(err);
         updateProgress(100, "Terjadi kesalahan saat memuat data");

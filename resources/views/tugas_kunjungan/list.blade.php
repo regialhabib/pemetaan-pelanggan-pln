@@ -39,7 +39,7 @@
 
 
                     <div class="d-flex justify-content-between items-center mb-4  align-items-center">
-                        <h4 class="card-title"> Daftar Tugas Kunjungan</h4>
+                        <h4 class="card-title">Status Penugasan</h4>
 
                     </div>
                     <table id="datatable" class="table table-bordered dt-responsive  nowrap w-100">
@@ -73,18 +73,20 @@
                                             {{ format_status($tugasKunjungan->status_tugas) }}
                                         </span>
                                     </td>
-                                    <td><a href="{{ route('tugas_kunjungan.detail', $tugasKunjungan->id) }}"
-                                            class="btn btn-sm btn-primary">Detail</a>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('tugas_kunjungan.detail', $tugasKunjungan->id) }}" class="btn btn-sm btn-primary d-inline-flex align-items-center">
+                                                <i class="bx bx-file-find me-1"></i> Detail
+                                            </a>
                                         @can('admin')
-                                            <a href="javascript:void(0)" class="btn btn-sm btn-danger btn-delete"
-                                                data-url="{{ route('tugas_kunjungan.destroy', $tugasKunjungan->id) }}">
+                                            <a href="{{ route('tugas_kunjungan.map', $tugasKunjungan->id) }}" class="btn btn-sm btn-info d-inline-flex align-items-center text-white">
+                                                <i class="bx bx-radar me-1"></i> Monitoring
+                                            </a>
+                                            <a href="javascript:void(0)" class="btn btn-sm btn-danger btn-delete d-inline-flex align-items-center" data-url="{{ route('tugas_kunjungan.destroy', $tugasKunjungan->id) }}" title="Hapus Tugas">
                                                 <i class="bx bx-trash"></i>
                                             </a>
-                                            <a href="{{ route('tugas_kunjungan.map', $tugasKunjungan->id) }}" class="btn btn-sm btn-info">
-                                                <i class="far fa-map"> Lihat Peta</i>
-                                            </a>
                                         @endcan
-
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

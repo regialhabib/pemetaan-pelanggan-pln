@@ -32,6 +32,7 @@ class PelangganImport implements
             ['id_pelanggan' => $row['id_pelanggan']],
             [
                 'nama'           => $row['nama'],
+                'no_hp'          => $row['no_hp'] ?? null,
                 'alamat'         => $row['alamat'],
                 'latitude'       => $row['latitude'],
                 'longitude'      => $row['longitude'],

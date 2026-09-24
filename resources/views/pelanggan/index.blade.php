@@ -190,7 +190,7 @@
                                         <ul class="list-unstyled hstack gap-1 mb-0">
                                             <button class="btn btn-sm btn-primary btn-edit" data-bs-toggle="modal"
                                                 data-bs-target="#staticBackdrop" data-id="{{ $pelanggan->id }}"
-                                                data-nama="{{ $pelanggan->nama }}" data-alamat="{{ $pelanggan->alamat }}"
+                                                data-nama="{{ $pelanggan->nama }}" data-no_hp="{{ $pelanggan->no_hp }}" data-alamat="{{ $pelanggan->alamat }}"
                                                 data-latitude="{{ $pelanggan->latitude }}"
                                                 data-longitude="{{ $pelanggan->longitude }}"
                                                 data-daya="{{ $pelanggan->daya }}"
@@ -235,14 +235,17 @@
                     <form action="{{ route('pelanggan.store') }}" method="POST">
                         @csrf
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="id_pelanggan" class="form-label">ID Pelanggan</label>
                                 <input type="text" class="form-control" id="id_pelanggan" name="id_pelanggan">
-
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="nama" class="form-label">Nama</label>
                                 <input type="text" class="form-control" id="nama" name="nama">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="no_hp" class="form-label">No HP</label>
+                                <input type="text" class="form-control" id="no_hp" name="no_hp">
                             </div>
                         </div>
                         <div class="row">
@@ -300,6 +303,12 @@
                                 <input type="text" class="form-control" id="namaEdit" name="nama">
                             </div>
                             <div class="col-md-6">
+                                <label for="no_hp" class="form-label">No HP</label>
+                                <input type="text" class="form-control" id="no_hpEdit" name="no_hp">
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
                                 <label for="alamat" class="form-label">Alamat</label>
                                 <input type="text" class="form-control" id="alamatEdit" name="alamat">
                             </div>
@@ -383,6 +392,7 @@
             btn.addEventListener('click', () => {
                 const id = btn.getAttribute('data-id');
                 const nama = btn.getAttribute('data-nama');
+                const no_hp = btn.getAttribute('data-no_hp');
                 const alamat = btn.getAttribute('data-alamat');
                 const latitude = btn.getAttribute('data-latitude');
                 const longitude = btn.getAttribute('data-longitude');
@@ -391,6 +401,7 @@
 
                 document.getElementById('idEdit').value = id;
                 document.getElementById('namaEdit').value = nama;
+                document.getElementById('no_hpEdit').value = no_hp || '';
                 document.getElementById('alamatEdit').value = alamat;
                 document.getElementById('latitudeEdit').value = latitude;
                 document.getElementById('longitudeEdit').value = longitude;

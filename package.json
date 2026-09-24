@@ -8,5 +8,11 @@
         "axios": "^1.1.2",
         "laravel-vite-plugin": "^0.7.2",
         "vite": "^4.0.0"
+    },
+    "dependencies": {
+        "leaflet": "^1.9.4",
+        "leaflet-routing-machine": "^3.2.12",
+        "leaflet.heat": "^0.2.0",
+        "leaflet.markercluster": "^1.5.3"
     }
 }

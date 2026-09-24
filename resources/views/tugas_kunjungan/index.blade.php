@@ -39,16 +39,15 @@
 
 
                     <div class="d-flex justify-content-between items-center mb-4  align-items-center">
-                        <h4 class="card-title"> Pelanggan</h4>
+                        <h4 class="card-title mb-0">Pilih Pelanggan untuk Ditugaskan</h4>
 
-                        <div>
-                            <button class="btn btn-sm btn-success"><span id="jumlahDipilih">
-                                    0
-                                </span>
-                             pelanggan dipilih
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-success pe-none fw-medium">
+                                <span id="jumlahDipilih">0</span> Pelanggan Dipilih
                             </button>
-                            <button class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#addModal"><i
-                                    class="bx bx-add-to-queue "></i> Buat Tugas Kunjungan</button>
+                            <button type="button" class="btn btn-sm btn-primary shadow-sm d-inline-flex align-items-center fw-medium" onclick="openAddModal()">
+                                Lanjutkan Penugasan <i class="bx bx-right-arrow-alt font-size-16 ms-1"></i>
+                            </button>
                         </div>
 
                     </div>
@@ -120,16 +119,16 @@
                     <form action="{{ route('tugas_kunjungan.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="pelanggan" id="pelanggan">
-                        <div class="row">
-                            <div class="col-12 mt-2">
-                                <label for="">Jumlah Pelanggan</label>
-                                <input type="text" class="form-control" disabled id="jumlah_pelanggan">
-                            </div>
+                        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center">
+                            <i class="bx bx-info-circle font-size-18 me-2"></i>
+                            <span>Anda akan menugaskan <strong id="jumlah_pelanggan_text">0</strong> pelanggan.</span>
                         </div>
+                        <input type="hidden" class="form-control" disabled id="jumlah_pelanggan">
+                        
                         <div class="row">
-                            <div class="col-md-12">
-                                <label for="nama" class="form-label">Keterangan</label>
-                                <textarea name="keterangan" class="form-control" id="keterangan" cols="30" rows="3"></textarea>
+                            <div class="col-md-12 mb-3">
+                                <label for="keterangan" class="form-label">Keterangan / Instruksi Tugas</label>
+                                <textarea name="keterangan" class="form-control" id="keterangan" cols="30" rows="3" placeholder="Contoh: Lakukan pengecekan meteran..."></textarea>
                             </div>
                         </div>
 
@@ -213,9 +212,25 @@
 
             jumlahDipilih.innerHTML = pelangganDipilih.length;
             document.getElementById('jumlah_pelanggan').value = pelangganDipilih.length;
+            const textEl = document.getElementById('jumlah_pelanggan_text');
+            if(textEl) textEl.innerHTML = pelangganDipilih.length;
+            
             const jsonString = JSON.stringify(pelangganDipilih);
             document.getElementById('pelanggan').value = jsonString;
 
+        }
+        
+        function openAddModal() {
+            if (pelangganDipilih.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Pilih Pelanggan',
+                    text: 'Silakan centang minimal 1 pelanggan pada tabel.'
+                });
+                return;
+            }
+            var myModal = new bootstrap.Modal(document.getElementById('addModal'));
+            myModal.show();
         }
     </script>
 

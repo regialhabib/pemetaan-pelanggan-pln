@@ -15,6 +15,7 @@ class Pelanggan extends Model
         'id',
         'id_pelanggan',
         'nama',
+        'no_hp',
         'alamat',
         'latitude',
         'longitude',
