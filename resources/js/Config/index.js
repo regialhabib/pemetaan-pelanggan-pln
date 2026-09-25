@@ -15,8 +15,8 @@ export function getRole() {
 }
 
 export const CONFIG = {
-    mapCenter: [-1.6161, 103.583],
-    defaultZoom: 14,
+    mapCenter: [-1.6161, 103.583], // Pusat Kota Jambi
+    defaultZoom: 12, // Skala kota, meminimalisir transisi zoom-out yang kasar
     apiBase: `${getBaseUrl()}/api`
 };
 

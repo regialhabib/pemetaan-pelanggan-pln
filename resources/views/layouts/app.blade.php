@@ -18,15 +18,11 @@
     <link href="{{ asset('css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- App Css-->
     <link href="{{ asset('css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
-    <style>
-        body.vertical-collpsed {
-            min-height: unset !important;
-        }
-    </style>
+    <link href="{{ asset('css/custom.css?v=2') }}" id="custom-style" rel="stylesheet" type="text/css" />
     @stack('style')
 </head>
 
-<body data-sidebar="dark" class="page-map ">
+<body data-sidebar="dark">
     <!-- Begin page -->
     <div id="layout-wrapper">
 

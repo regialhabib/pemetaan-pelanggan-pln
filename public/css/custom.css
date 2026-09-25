@@ -1,0 +1,583 @@
+        html, body {
+            height: 100%;
+        }
+        body.page-map {
+            margin: 0;
+            overflow: hidden; /* Prevent scrolling on map page if needed */
+        }
+
+        .page-map .page-content {
+            padding: 70px 0 0 0 !important;
+        }
+
+        .map-wrapper {
+            position: relative;
+        }
+
+        .page-map #map {
+            width: 100%;
+            height: calc(100vh - 70px);
+            min-height: calc(100vh - 70px);
+            margin-top: 0;
+        }
+
+        body.vertical-collpsed {
+            min-height: unset !important;
+        }
+
+        /* ===============================
+   SEARCH WRAPPER
+=============================== */
+        .search-wrapper {
+            position: relative;
+
+        }
+
+        /* ===============================
+   close icon
+=============================== */
+        .clear-icon {
+            position: absolute;
+            right: 36px;
+            /* sebelum icon search */
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #999;
+            cursor: pointer;
+            display: none;
+        }
+
+        .clear-icon:hover {
+            color: #556ee6;
+        }
+
+        /* ===============================
+   INPUT
+=============================== */
+        .search-input {
+            padding-right: 60px;
+        }
+
+        /* icon */
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #74788d;
+            pointer-events: none;
+        }
+
+        /* ===============================
+   DROPDOWN
+=============================== */
+        /* ===============================
+           MODERN SEARCH DROPDOWN
+        =============================== */
+        .search-dropdown {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+            list-style: none;
+            padding: 6px;
+            margin: 0;
+            max-height: 380px;
+            overflow-y: auto;
+            z-index: 2050;
+            display: none;
+        }
+
+        .search-dropdown li.custom-search-item {
+            padding: 9px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* PERBAIKAN FATAL: Timpa bawaan Skote yang membuat semua span menjadi hancur (absolute, font 16px, line-height 38px) */
+        .app-search .search-dropdown span {
+            position: static !important;
+            z-index: auto !important;
+            font-size: inherit !important;
+            line-height: inherit !important;
+            color: inherit;
+        }
+
+        .search-dropdown li.custom-search-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-dropdown li.custom-search-item:hover,
+        .search-dropdown li.custom-search-item.active {
+            background-color: #f1f5f9;
+        }
+
+        .search-dropdown .search-empty {
+            padding: 10px 14px;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .search-highlight {
+            display: inline;
+            line-height: inherit;
+            vertical-align: baseline;
+            color: #556ee6 !important;
+        }
+
+        .app-search {
+            width: 320px;
+        }
+
+        .app-search .search-input {
+            border-radius: 20px;
+            background: #f3f5f8;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .app-search .search-input:focus {
+            background: #ffffff;
+            border-color: #556ee6;
+            box-shadow: 0 0 0 3px rgba(85, 110, 230, 0.15);
+        }
+
+        /* ===============================
+           MAP FLOATING BAR & FILTER
+        =============================== */
+        .map-floating-bar {
+            position: absolute !important;
+            top: 15px !important;
+            left: 15px !important;
+            z-index: 998 !important;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-filter-floating {
+            background: rgba(30, 41, 59, 0.94) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+            border-radius: 30px !important;
+            padding: 8px 18px !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+            transition: background 0.2s ease, box-shadow 0.2s ease !important;
+        }
+
+        .btn-filter-floating:hover {
+            background: rgba(15, 23, 42, 0.98) !important;
+            color: #ffffff !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        .filter-icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: inherit;
+            font-size: 16px;
+        }
+
+        /* ===============================
+           MODERN OFFCANVAS DRAWER
+        =============================== */
+        .modern-offcanvas {
+            width: 380px !important;
+            max-width: 90vw;
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            box-shadow: -10px 0 35px rgba(0, 0, 0, 0.15);
+            border: none;
+        }
+
+        .offcanvas-icon-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(85, 110, 230, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-tarif-pill {
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 500;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-tarif-pill:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .btn-tarif-pill.active {
+            background: #556ee6 !important;
+            border-color: #556ee6 !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            box-shadow: 0 3px 10px rgba(85, 110, 230, 0.35) !important;
+        }
+
+        .btn-daya-preset {
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #64748b;
+            transition: all 0.15s ease;
+        }
+
+        .btn-daya-preset:hover {
+            border-color: #cbd5e1;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .btn-daya-preset.active {
+            background: #f1b44c !important;
+            border-color: #f1b44c !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+
+        /* ================================
+           MODERN DARK CARD POPUP (LEAFLET)
+        ================================ */
+        .dark-card {
+            width: 290px;
+            background: #1a1e32;
+            border-radius: 16px;
+            color: #e2e8f0;
+            font-family: inherit;
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .dark-card-header {
+            padding: 14px 16px 10px;
+            background: linear-gradient(180deg, #242944 0%, #1a1e32 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .dark-card-header .customer-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 4px 0 0;
+            letter-spacing: -0.2px;
+            line-height: 1.3;
+        }
+
+        .idpel-tag {
+            font-family: monospace;
+            font-size: 11px;
+            background: rgba(85, 110, 230, 0.2);
+            color: #9bb0fc;
+            padding: 2px 7px;
+            border-radius: 5px;
+            border: 1px solid rgba(85, 110, 230, 0.35);
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-copy-idpel {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px 5px;
+            margin-right: 28px;
+            border-radius: 4px;
+            transition: color 0.15s;
+        }
+
+        .btn-copy-idpel:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-card-body {
+            padding: 12px 16px;
+        }
+
+        .popup-pill-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .popup-pill {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .popup-pill.tarif {
+            background: rgba(85, 110, 230, 0.18);
+            color: #8da2fb;
+            border: 1px solid rgba(85, 110, 230, 0.3);
+        }
+
+        .popup-pill.daya {
+            background: rgba(241, 180, 76, 0.18);
+            color: #f1b44c;
+            border: 1px solid rgba(241, 180, 76, 0.3);
+        }
+
+        .popup-phone {
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+
+
+        .dark-card .address {
+            font-size: 12px;
+            color: #cbd5e1;
+            line-height: 1.45;
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .dark-card-footer {
+            padding: 10px 16px 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            background: #161a2d;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .dark-card-footer .btn {
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .dark-card-footer .btn.primary {
+            background-color: #556ee6;
+            border: none;
+            color: #fff;
+        }
+
+        .dark-card-footer .btn.primary:hover {
+            background-color: #4458c8;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            line-height: inherit !important;
+        }
+
+        .leaflet-popup-content-wrapper {
+            padding: 0 !important;
+            border-radius: 16px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        .leaflet-popup-tip {
+            background: #1a1e32 !important;
+        }
+
+        .leaflet-container a.leaflet-popup-close-button {
+            top: 14px !important;
+            right: 14px !important;
+            color: #94a3b8 !important;
+            font-size: 16px !important;
+            text-align: center !important;
+            transition: all 0.2s ease !important;
+            text-decoration: none !important;
+            background: transparent !important;
+        }
+
+        .leaflet-container a.leaflet-popup-close-button:hover {
+            color: #ffffff !important;
+        }
+
+        /* ================================
+           MODERN FLOATING CONTROLS
+        ================================ */
+        .my-location-btn, .reset-view-btn {
+            width: 38px !important;
+            height: 38px !important;
+            padding: 0 !important;
+            border-radius: 10px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: #ffffff !important;
+            color: #334155 !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16) !important;
+            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+            transition: all 0.2s ease !important;
+            margin-bottom: 8px !important;
+            cursor: pointer;
+        }
+
+        .my-location-btn:hover, .reset-view-btn:hover {
+            background: #f8fafc !important;
+            color: #556ee6 !important;
+            transform: scale(1.06) !important;
+        }
+
+        .clear-route-btn {
+            background: #f46a6a !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 6px 14px !important;
+            border-radius: 20px !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            box-shadow: 0 4px 14px rgba(244, 106, 106, 0.35) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            margin-bottom: 8px !important;
+            cursor: pointer;
+        }
+
+        /* ================================
+               Loader
+            ================================ */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(2px);
+        }
+
+        .loader-content {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    
+    
+        .drop-zone {
+            border: 2px dashed #6c757d;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            color: #6c757d;
+            transition: 0.2s;
+        }
+
+        .drop-zone.dragover {
+            background-color: #e9f2ff;
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
+
+        /* Preview File Card */
+        .file-preview {
+            position: relative;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 40px;
+            color: #198754;
+        }
+
+        /* Remove Button */
+        .remove-file {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: transparent;
+            border: none;
+            color: #dc3545;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .remove-file:hover {
+            color: #bb2d3b;
+        }
+
+        .import-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overlay-card {
+            width: 360px;
+            background: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+    
+
+        body.vertical-collpsed {
+            min-height: unset !important;
+        }
+    
+    

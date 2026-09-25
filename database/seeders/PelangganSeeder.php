@@ -15,11 +15,11 @@ class PelangganSeeder extends Seeder
     {
         $faker = \Faker\Factory::create('id_ID');
 
-        // Rentang koordinat Kota Jambi (sekitar Telanaipura dan sekitarnya)
-        $minLat = -1.6350;
-        $maxLat = -1.5900;
-        $minLng = 103.5700;
-        $maxLng = 103.6250;
+        // Rentang koordinat yang lebih luas untuk Kota Jambi
+        $minLat = -1.6500;
+        $maxLat = -1.5500;
+        $minLng = 103.5300;
+        $maxLng = 103.6500;
 
         $golonganTarif = ['R1', 'R2', 'R3', 'INDUSTRI'];
         $dayaOptions = [
@@ -29,21 +29,24 @@ class PelangganSeeder extends Seeder
             'INDUSTRI' => [25000, 35000, 50000, 100000]
         ];
 
-        for ($i = 1; $i <= 150; $i++) {
+        $totalCustomers = 1500;
+        $chunkSize = 500;
+        $data = [];
+
+        for ($i = 1; $i <= $totalCustomers; $i++) {
             $tarif = $faker->randomElement($golonganTarif);
             $daya = $faker->randomElement($dayaOptions[$tarif]);
             
-            // Format ID Pelanggan: PLN + 5 digit
+            // Format ID Pelanggan: PLN + 5 digit unik
             $idPelanggan = 'PLN' . str_pad($i, 5, '0', STR_PAD_LEFT);
             
-            // Generate random lat/lng in bounding box
-            $lat = $minLat + ($faker->randomFloat(5, 0, 1) * ($maxLat - $minLat));
-            $lng = $minLng + ($faker->randomFloat(5, 0, 1) * ($maxLng - $minLng));
+            // Generate random lat/lng in bounding box Kota Jambi
+            $lat = $minLat + ($faker->randomFloat(6, 0, 1) * ($maxLat - $minLat));
+            $lng = $minLng + ($faker->randomFloat(6, 0, 1) * ($maxLng - $minLng));
 
-            // Generate fake phone number starting with 08
             $noHp = '08' . $faker->randomNumber(8, true);
 
-            Pelanggan::create([
+            $data[] = [
                 'id_pelanggan' => $idPelanggan,
                 'nama' => $faker->name,
                 'alamat' => $faker->streetAddress . ', Kota Jambi',
@@ -51,8 +54,16 @@ class PelangganSeeder extends Seeder
                 'latitude' => $lat,
                 'longitude' => $lng,
                 'golongan_tarif' => $tarif,
-                'daya' => $daya
-            ]);
+                'daya' => $daya,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            // Insert per chunk untuk mempercepat seeding
+            if (count($data) >= $chunkSize || $i === $totalCustomers) {
+                Pelanggan::insert($data);
+                $data = [];
+            }
         }
     }
 }

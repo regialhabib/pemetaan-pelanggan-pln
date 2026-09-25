@@ -1,7 +1,7 @@
 import '../MapCore/map-vendor.js';
 import { initMap } from "../MapCore/mapInit.js";
 import { fetchPelanggan } from "../Services/api.js";
-import { addMarkersBatch } from "../MapCore/markers.js";
+import { addMarkersBatch, resetMapView } from "../MapCore/markers.js";
 import { showLoader, hideLoader, updateProgress } from "../UI/loader.js";
 
 import { showSimpleErrorToast } from "../UI/toast.js";
@@ -24,6 +24,7 @@ async function loadMapPage() {
         updateProgress(50, "Menyiapkan marker...");
 
         addMarkersBatch(map, pelanggan);
+        resetMapView(false); // Instantly center on load without animation
         initPelangganFilter();
         bindPopupEvents(map);
 

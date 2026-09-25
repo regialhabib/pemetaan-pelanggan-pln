@@ -38,7 +38,7 @@ async function loadMapPage() {
             // Auto fit bounds for admin monitoring
             const group = L.featureGroup(pelanggan.map(p => L.marker([p.latitude, p.longitude])));
             if (group.getLayers().length > 0) {
-                map.fitBounds(group.getBounds(), { padding: [50, 50] });
+                map.fitBounds(group.getBounds(), { padding: [50, 50], animate: false });
             }
             // Tambahkan kotak statistik khusus Admin
             addMonitoringStatsControl(map, pelanggan);

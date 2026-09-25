@@ -27,9 +27,9 @@ export function addMarkersBatch(map, pelangganList) {
 
     markersLayer = L.markerClusterGroup({
         chunkedLoading: true,
-        maxClusterRadius: 50,
-        disableClusteringAtZoom: 16,
-        spiderfyOnMaxZoom: true
+        maxClusterRadius: 80, // Ditingkatkan ke 80 agar panning di zoom menengah lebih ringan
+        spiderfyOnMaxZoom: true,
+        zoomToBoundsOnClick: true
     });
     updateCounter(total, total); // Final count
 
@@ -37,8 +37,11 @@ export function addMarkersBatch(map, pelangganList) {
     for (let i = 0; i < total; i++) {
         const p = pelangganList[i];
 
+        let isTask = false;
         let markerOptions = {};
+        
         if (p.status_kunjungan) {
+            isTask = true;
             let color = "#f46a6a"; // Default: belum (merah)
             let iconClass = "bx-x";
             
@@ -61,10 +64,20 @@ export function addMarkersBatch(map, pelangganList) {
             });
         }
 
-        const marker = L.marker([p.latitude, p.longitude], markerOptions).bindPopup(
-            renderPopupHTML(p),
-            { closeButton: true },
-        );
+        let marker;
+        if (isTask) {
+            marker = L.marker([p.latitude, p.longitude], markerOptions).bindPopup(
+                () => renderPopupHTML(p),
+                { closeButton: true }
+            );
+        } else {
+            // Revert back to L.marker. Leaflet MarkerCluster uses CSS3 GPU hardware acceleration for L.marker animations.
+            // Using Canvas for clusters causes CPU-bound full-canvas redraws during zoom animations, causing hangs.
+            marker = L.marker([p.latitude, p.longitude]).bindPopup(
+                () => renderPopupHTML(p),
+                { closeButton: true }
+            );
+        }
 
         marker.data = p; 
         markers.push(marker);
@@ -75,56 +88,46 @@ export function addMarkersBatch(map, pelangganList) {
 
     heatmapLayer = initHeatmapLayer(pelangganList);
 
-    // Tambahkan kontrol Switch kustom untuk Heatmap
-    const SwitchControl = L.Control.extend({
-        options: { position: "bottomleft" },
-        onAdd: function () {
-            const div = L.DomUtil.create("div", "leaflet-control shadow-lg");
-            div.style.fontFamily = "inherit";
-            div.style.borderRadius = "30px";
-            div.style.backgroundColor = "rgba(30, 41, 59, 0.94)";
-            div.style.backdropFilter = "blur(10px)";
-            div.style.WebkitBackdropFilter = "blur(10px)";
-            div.style.border = "1px solid rgba(255, 255, 255, 0.15)";
-            div.style.padding = "8px 18px";
-            div.style.marginBottom = "25px";
-            div.style.marginLeft = "15px";
-            div.style.transition = "all 0.3s ease";
-            
-            div.innerHTML = `
-                <div class="form-check form-switch form-switch-md mb-0 d-flex align-items-center" style="padding-left: 2.2em;">
-                    <input class="form-check-input" type="checkbox" id="heatmapSwitch" style="cursor: pointer; margin-left: -2.2em;">
-                    <label class="form-check-label fw-medium ms-2 mb-0 font-size-13 text-white" for="heatmapSwitch" style="cursor: pointer;">
-                        Heatmap
-                    </label>
-                </div>
-            `;
-            
-            L.DomEvent.disableClickPropagation(div);
-            
-            const checkbox = div.querySelector("#heatmapSwitch");
-            checkbox.addEventListener("change", function(e) {
-                if (e.target.checked) {
-                    mapRef.removeLayer(markersLayer);
-                    if (heatmapLayer) {
-                        mapRef.addLayer(heatmapLayer);
-                        renderHeatmapIfActive(mapRef);
-                    }
-                } else {
-                    if (heatmapLayer) mapRef.removeLayer(heatmapLayer);
-                    mapRef.addLayer(markersLayer);
+    // Hubungkan dengan tombol Heatmap di map-floating-bar
+    const heatmapBtn = document.getElementById("heatmapToggleBtn");
+    if (heatmapBtn) {
+        // Hindari duplikasi event listener jika addMarkersBatch dipanggil ulang
+        const newHeatmapBtn = heatmapBtn.cloneNode(true);
+        heatmapBtn.parentNode.replaceChild(newHeatmapBtn, heatmapBtn);
+        
+        // Cek status saat ini
+        let isHeatmapActive = heatmapLayer && mapRef.hasLayer(heatmapLayer);
+        
+        newHeatmapBtn.addEventListener("click", () => {
+            isHeatmapActive = !isHeatmapActive;
+            if (isHeatmapActive) {
+                mapRef.removeLayer(markersLayer);
+                if (heatmapLayer) {
+                    mapRef.addLayer(heatmapLayer);
+                    renderHeatmapIfActive(mapRef);
                 }
-            });
-            
-            return div;
-        }
-    });
-    
-    if (switchControlInstance) {
-        map.removeControl(switchControlInstance);
+                newHeatmapBtn.style.backgroundColor = "rgba(85, 110, 230, 0.94)"; // Primary color
+                newHeatmapBtn.style.borderColor = "rgba(85, 110, 230, 0.94)";
+                
+                const textSpan = newHeatmapBtn.querySelector("span:last-child");
+                if (textSpan) textSpan.textContent = "Marker";
+                
+                const icon = newHeatmapBtn.querySelector("i");
+                if (icon) icon.className = "bx bx-map-pin";
+            } else {
+                if (heatmapLayer) mapRef.removeLayer(heatmapLayer);
+                mapRef.addLayer(markersLayer);
+                newHeatmapBtn.style.backgroundColor = ""; // Kembali ke CSS class
+                newHeatmapBtn.style.borderColor = "";
+                
+                const textSpan = newHeatmapBtn.querySelector("span:last-child");
+                if (textSpan) textSpan.textContent = "Heatmap";
+                
+                const icon = newHeatmapBtn.querySelector("i");
+                if (icon) icon.className = "bx bx-layer";
+            }
+        });
     }
-    switchControlInstance = new SwitchControl();
-    map.addControl(switchControlInstance);
     
     // Tampilkan marker secara default
     map.addLayer(markersLayer);
@@ -205,7 +208,7 @@ export function filterPelanggan({
     };
 }
 
-export function resetMapView() {
+export function resetMapView(animate = true) {
     if (!mapRef) return;
     
     // Gunakan array markers asli untuk menghitung bounds yang valid
@@ -214,7 +217,7 @@ export function resetMapView() {
             const group = L.featureGroup(markers);
             const bounds = group.getBounds();
             if (bounds && bounds.isValid()) {
-                mapRef.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                mapRef.fitBounds(bounds, { padding: [50, 50], maxZoom: 16, animate: animate });
                 return;
             }
         } catch (e) {
@@ -223,7 +226,7 @@ export function resetMapView() {
     }
     
     // Fallback jika tidak ada marker
-    mapRef.setView([-1.6161, 103.583], 14);
+    mapRef.setView([-1.6161, 103.583], 12, { animate: animate });
 }
 
 export function switchToMarkerMode() {
@@ -237,6 +240,19 @@ export function switchToMarkerMode() {
     // pastikan marker aktif
     if (!mapRef.hasLayer(markersLayer)) {
         mapRef.addLayer(markersLayer);
+    }
+    
+    // Reset toggle UI
+    const heatmapBtn = document.getElementById("heatmapToggleBtn");
+    if (heatmapBtn) {
+        heatmapBtn.style.backgroundColor = ""; 
+        heatmapBtn.style.borderColor = "";
+        
+        const textSpan = heatmapBtn.querySelector("span:last-child");
+        if (textSpan) textSpan.textContent = "Heatmap";
+        
+        const icon = heatmapBtn.querySelector("i");
+        if (icon) icon.className = "bx bx-layer";
     }
 }
 

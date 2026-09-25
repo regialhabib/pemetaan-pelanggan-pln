@@ -5,57 +5,7 @@
     <meta charset="utf-8">
     <title>Laporan Kunjungan</title>
 
-    <style>
-        body {
-            font-family: sans-serif;
-            font-size: 11px;
-        }
-
-        .header {
-            text-align: center;
-            line-height: 1.5;
-        }
-
-        .header h4 {
-            margin: 0;
-            font-weight: bold;
-        }
-
-        .header p {
-            margin: 0;
-        }
-
-        .garis {
-            border-top: 2px solid black;
-            border-bottom: 1px solid black;
-            margin-top: 5px;
-            margin-bottom: 15px;
-        }
-
-        .judul {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            border: 1px solid #000;
-            padding: 5px;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        .center {
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ public_path('css/pdf.css') }}">
 </head>
 
 <body>
