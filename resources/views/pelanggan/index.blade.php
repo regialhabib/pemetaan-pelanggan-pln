@@ -475,6 +475,7 @@
             fetch(`${BASE_URL}/pelanggan/import`, {
                     method: 'POST',
                     headers: {
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: new FormData(document.getElementById('importForm'))

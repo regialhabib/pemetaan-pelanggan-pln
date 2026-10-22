@@ -137,7 +137,7 @@
                                 <label for="petugas" class="form-label">Petugas</label>
                                 <select name="petugas" id="petugas" class="form-select">
                                     @foreach ($petugass as $petugas)
-                                        <option value="{{ $petugas->id }}">{{ $petugas->nama }}</option>
+                                        <option value="{{ $petugas->id }}">{{ $petugas->name }}</option>
                                     @endforeach
                                 </select>
                             </div>

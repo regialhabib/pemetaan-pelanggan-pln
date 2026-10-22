@@ -31,8 +31,8 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-12 text-center">
-                            <h5 class="font-weight-bold">{{ auth()->user()->nama }}</h5>
-                            <p>{{ auth()->user()->role ?? 'User' }}</p>
+                            <h5 class="font-weight-bold">{{ auth()->user()->name }}</h5>
+                            <p>{{ auth()->user()->role?->value ?? 'User' }}</p>
                         </div>
                     </div>
 
@@ -79,8 +79,8 @@
                                     <div class="form-group focused">
                                         <label class="form-control-label" for="name">Nama<span
                                                 class="small text-danger">*</span></label>
-                                        <input type="text" id="name" class="form-control" name="nama"
-                                            value="{{ auth()->user()->nama }}" placeholder="Name">
+                                        <input type="text" id="name" class="form-control" name="name"
+                                            value="{{ old('name', auth()->user()->name) }}" placeholder="Name">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">

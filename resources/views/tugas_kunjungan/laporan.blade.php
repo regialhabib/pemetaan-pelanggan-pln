@@ -159,7 +159,7 @@
                         data: 'tugas.created_at'
                     },
                     {
-                        data: 'tugas.petugas.nama'
+                        data: 'tugas.petugas.name'
                     },
                     {
                         data: 'pelanggan.nama'

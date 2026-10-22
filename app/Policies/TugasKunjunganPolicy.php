@@ -4,63 +4,37 @@ namespace App\Policies;
 
 use App\Models\TugasKunjungan;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class TugasKunjunganPolicy
 {
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        //
-    }
-
-    /**
-     * Determine whether the user can view the model.
+     * Admin boleh melihat semua tugas, petugas hanya tugas miliknya.
      */
     public function view(User $user, TugasKunjungan $tugasKunjungan): bool
     {
-        //
+        return $user->isAdmin() || $this->owns($user, $tugasKunjungan);
     }
 
     /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        //
-    }
-
-    /**
-     * Determine whether the user can update the model.
+     * Memperbarui status kunjungan pada tugas ini.
      */
     public function update(User $user, TugasKunjungan $tugasKunjungan): bool
     {
-        //
+        return $user->isAdmin() || $this->owns($user, $tugasKunjungan);
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, TugasKunjungan $tugasKunjungan): bool
+    public function create(User $user): bool
     {
-        //
+        return $user->isAdmin();
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, TugasKunjungan $tugasKunjungan): bool
+    public function delete(User $user): bool
     {
-        //
+        return $user->isAdmin();
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, TugasKunjungan $tugasKunjungan): bool
+    private function owns(User $user, TugasKunjungan $tugasKunjungan): bool
     {
-        //
+        return (int) $tugasKunjungan->id_petugas === $user->id;
     }
 }

@@ -111,7 +111,7 @@
                             <img class="rounded-circle header-profile-user"
                                 src="{{ asset('images/users/avatar-1.jpg') }}" alt="Header Avatar">
                             <span class="d-none d-xl-inline-block ms-1"
-                                key="t-henry">{{ auth()->user()->nama }}</span>
+                                key="t-henry">{{ auth()->user()->name }}</span>
                             <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end">
@@ -121,9 +121,12 @@
                                     key="t-profile">Profile</span></a>
 
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item text-danger" href="{{ route('logout') }}"><i
-                                    class="bx bx-power-off font-size-16 align-middle me-1 text-danger"></i> <span
-                                    key="t-logout">Logout</span></a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item text-danger"><i
+                                        class="bx bx-power-off font-size-16 align-middle me-1 text-danger"></i> <span
+                                        key="t-logout">Logout</span></button>
+                            </form>
                         </div>
                     </div>
                 </div>

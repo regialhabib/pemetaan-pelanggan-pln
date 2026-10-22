@@ -2,222 +2,126 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pelanggan;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
+use App\Http\Requests\StorePelangganRequest;
+use App\Http\Requests\UpdatePelangganRequest;
 use App\Imports\PelangganImport;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Pelanggan;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Throwable;
 
 class PelangganController extends Controller
 {
-
-    public function pelanggan()
+    public function pelanggan(): View
     {
-        $pelanggans = Pelanggan::get();
+        $pelanggans = Pelanggan::all();
+
         return view('pelanggan.index', compact('pelanggans'));
     }
 
-
     /**
-     * Display a listing of the resource.
+     * Data pelanggan untuk peta admin.
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        try {
-            $pelanggan = Pelanggan::select([
-                'id',
-                'id_pelanggan',
-                'nama',
-                'no_hp',
-                'alamat',
-                'latitude',
-                'longitude',
-                'golongan_tarif',
-                'daya'
-            ])->get();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Data pelanggan berhasil diambil',
-                'data' => $pelanggan,
-
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil data',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request)
-    {
-
-        $validated = $request->validate([
-            'id' => 'required',
-            'nama' => 'required',
-            'no_hp' => 'nullable|string|max:20',
-            'alamat' => 'required',
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'golongan_tarif' => 'required',
-            'daya' => 'required',
+        $pelanggan = Pelanggan::query()->get([
+            'id',
+            'id_pelanggan',
+            'nama',
+            'no_hp',
+            'alamat',
+            'latitude',
+            'longitude',
+            'golongan_tarif',
+            'daya',
         ]);
 
-        try {
-
-            $pelanggan = Pelanggan::findOrFail($request->id);
-            $pelanggan->update($validated);
-
-            return redirect()->route('pelanggan.index')->with('success', 'Data pelanggan berhasil diperbarui.');
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            return redirect()->route('pelanggan.index')->with('error', 'Data pelanggan gagal diperbarui. Silakan coba lagi.');
-        }
+        return response()->json([
+            'success' => true,
+            'message' => 'Data pelanggan berhasil diambil',
+            'data' => $pelanggan,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePelangganRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'id_pelanggan' => 'required',
-            'nama' => 'required',
-            'no_hp' => 'nullable|string|max:20',
-            'alamat' => 'required',
-            'latitude' => 'required',
-            'longitude' => 'required',
-            'golongan_tarif' => 'required',
-            'daya' => 'required',
-        ]);
+        Pelanggan::create($request->validated());
 
-        try {
-            Pelanggan::create($validated);
-            return redirect()->route('pelanggan.index')->with('success', 'Data pelanggan berhasil disimpan.');
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            return redirect()->route('pelanggan.index')->with('error', $e->getMessage());
-        }
+        return redirect()->route('pelanggan.index')->with('success', 'Data pelanggan berhasil disimpan.');
+    }
+
+    public function update(UpdatePelangganRequest $request): RedirectResponse
+    {
+        Pelanggan::findOrFail($request->validated('id'))
+            ->update($request->safe()->except('id'));
+
+        return redirect()->route('pelanggan.index')->with('success', 'Data pelanggan berhasil diperbarui.');
+    }
+
+    public function destroy(Pelanggan $pelanggan): RedirectResponse
+    {
+        $pelanggan->delete();
+
+        return redirect()->route('pelanggan.index')->with('success', 'Data pelanggan berhasil dihapus.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Antrekan import Excel dan kembalikan key untuk polling progres.
      */
-    public function destroy($id)
+    public function import(Request $request): JsonResponse
     {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls'],
+        ]);
+
+        $file = $request->file('file');
+
         try {
-            $pelanggan = Pelanggan::findOrFail($id);
-            $pelanggan->delete();
-            return redirect()->route('pelanggan.index')->with('success', 'Data pelanggan berhasil dihapus.');
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            return redirect()->route('pelanggan.index')->with('error', 'Data pelanggan gagal dihapus. Silakan coba lagi.');
-        }
-    }
-
-    public function import(Request $request)
-    {
-        try {
-
-            // ===============================
-            // VALIDASI
-            // ===============================
-            $request->validate([
-                'file' => 'required|file|mimes:xlsx,xls'
-            ]);
-
-            if (!$request->hasFile('file')) {
-                throw new \Exception('File tidak ditemukan di request');
-            }
-
-            $file = $request->file('file');
-
-            // ===============================
-            // HITUNG TOTAL ROW
-            // ===============================
-            $spreadsheet = IOFactory::load($file->getRealPath());
-            $sheet = $spreadsheet->getActiveSheet();
-
-            $highestRow = $sheet->getHighestDataRow();
+            $highestRow = IOFactory::load($file->getRealPath())->getActiveSheet()->getHighestDataRow();
 
             if ($highestRow < 2) {
-                throw new \Exception('File excel kosong atau tidak memiliki data');
+                return response()->json([
+                    'error' => true,
+                    'message' => 'File excel kosong atau tidak memiliki data',
+                ], 422);
             }
 
-            $totalRows = $highestRow - 1;
-
-            // ===============================
-            // SET CACHE
-            // ===============================
             $key = (string) Str::uuid();
 
-            Cache::put("import_total_{$key}", $totalRows, 600);
+            Cache::put("import_total_{$key}", $highestRow - 1, 600);
             Cache::put("import_progress_{$key}", 0, 600);
 
-            // ===============================
-            // QUEUE IMPORT
-            // ===============================
             Excel::queueImport(new PelangganImport($key), $file);
 
-           // Excel::import(new PelangganImport($key), $file);
-
-
-            return response()->json([
-                'key' => $key
-            ]);
-        } catch (\Throwable $e) {
-
-            // ===============================
-            // LOG ERROR DETAIL
-            // ===============================
-            Log::error('IMPORT EXCEL GAGAL', [
-                'message' => $e->getMessage(),
-                'file'    => $e->getFile(),
-                'line'    => $e->getLine(),
-                'trace'   => $e->getTraceAsString(),
-            ]);
+            return response()->json(['key' => $key]);
+        } catch (Throwable $e) {
+            Log::error('IMPORT EXCEL GAGAL', ['exception' => $e]);
 
             return response()->json([
-                'error'   => true,
-                'message' => $e->getMessage()
+                'error' => true,
+                'message' => 'Import gagal diproses. Periksa format file lalu coba lagi.',
             ], 500);
         }
     }
 
-    public function progress($key)
+    public function progress(string $key): JsonResponse
     {
-        try {
-            $total = Cache::get("import_total_{$key}");
-            $done  = Cache::get("import_progress_{$key}");
+        $total = (int) Cache::get("import_total_{$key}", 0);
+        $done = (int) Cache::get("import_progress_{$key}", 0);
 
-            if (!$total || $total <= 0) {
-                return response()->json([
-                    'progress' => 0
-                ]);
-            }
-
-            $progress = intval(($done / $total) * 100);
-
-            return response()->json([
-                'progress' => min(100, $progress)
-            ]);
-        } catch (\Throwable $e) {
-
-            Log::error('IMPORT PROGRESS ERROR', [
-                'key'     => $key,
-                'message' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'progress' => 0,
-                'error' => true
-            ], 500);
+        if ($total <= 0) {
+            return response()->json(['progress' => 0]);
         }
+
+        return response()->json([
+            'progress' => min(100, intdiv($done * 100, $total)),
+        ]);
     }
 }

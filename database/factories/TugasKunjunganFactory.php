@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\TugasKunjungan;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TugasKunjungan>
+ * @extends Factory<TugasKunjungan>
  */
 class TugasKunjunganFactory extends Factory
 {
@@ -17,7 +19,8 @@ class TugasKunjunganFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'id_petugas' => User::factory(),
+            'keterangan' => fake()->sentence(),
         ];
     }
 }

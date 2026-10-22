@@ -72,8 +72,8 @@
                                     <td>{{ $tugasKunjungan->pelanggan?->daya }}</td>
                                     <td>
                                         <span
-                                            class="badge {{ $tugasKunjungan->status_kunjungan == 'sudah_dikunjungi' ? 'bg-success' : 'bg-warning' }}">
-                                            {{format_status($tugasKunjungan->status_kunjungan)  }}
+                                            class="badge {{ $tugasKunjungan->status_kunjungan === \App\Enums\StatusKunjungan::SudahDikunjungi ? 'bg-success' : 'bg-warning' }}">
+                                            {{ $tugasKunjungan->status_kunjungan?->label() }}
                                         </span>
                                     </td>
                                    

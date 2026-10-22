@@ -66,11 +66,11 @@
                                     </td>
 
                                     <td>{{ $tugasKunjungan->keterangan }}</td>
-                                    <td>{{ $tugasKunjungan->petugas->nama }}</td>
+                                    <td>{{ $tugasKunjungan->petugas?->name }}</td>
                                     <td>
                                         <span
-                                            class="badge {{ $tugasKunjungan->status_tugas == 'selesai' ? 'bg-success' : 'bg-warning' }}">
-                                            {{ format_status($tugasKunjungan->status_tugas) }}
+                                            class="badge {{ $tugasKunjungan->status_tugas === \App\Enums\StatusTugas::Selesai ? 'bg-success' : 'bg-warning' }}">
+                                            {{ $tugasKunjungan->status_tugas?->label() }}
                                         </span>
                                     </td>
                                     <td>

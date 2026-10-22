@@ -52,7 +52,7 @@
                     </td>
 
                     <td>
-                        {{ optional(optional($item->tugas)->petugas)->nama }}
+                        {{ $item->tugas?->petugas?->name }}
                     </td>
 
                     <td>

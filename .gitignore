@@ -16,4 +16,9 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-docs/ 
+docs/
+*.log
+.phpunit.result.cache
+/storage/pail
+/.claude/settings.local.json
+_ide_helper.php
