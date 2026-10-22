@@ -1,59 +1,41 @@
+/**
+ * Radius & blur heatmap per batas zoom (zoom <= maxZoom).
+ */
+const HEATMAP_ZOOM_STYLES = [
+    { maxZoom: 10, radius: 45, blur: 30 },
+    { maxZoom: 12, radius: 35, blur: 24 },
+    { maxZoom: 14, radius: 28, blur: 18 },
+    { maxZoom: 16, radius: 20, blur: 12 },
+    { maxZoom: Infinity, radius: 12, blur: 7 },
+];
+
 let heatmapLayer = null;
 let lastPoints = [];
+
 function buildHeatmapPoints(pelangganList) {
-    return pelangganList
-        .filter((p) => p.latitude && p.longitude)
-        .map((p) => [
-            p.latitude,
-            p.longitude,
-            // default intensity = 1
-        ]);
+    return pelangganList.filter((p) => p.latitude && p.longitude).map((p) => [p.latitude, p.longitude]);
 }
 
-function initHeatmapLayer(pelangganList) {
-     lastPoints = buildHeatmapPoints(pelangganList);
-
-    heatmapLayer = L.heatLayer(lastPoints, {
-        // radius: 35, 
-        blur: 20,
-        maxZoom: 16,
-    });
+export function initHeatmapLayer(pelangganList) {
+    lastPoints = buildHeatmapPoints(pelangganList);
+    heatmapLayer = L.heatLayer(lastPoints, { blur: 20, maxZoom: 16 });
 
     return heatmapLayer;
 }
 
-// UPDATE DATA SAJA
-function setHeatmapData(pelangganFiltered) {
+/**
+ * Simpan titik hasil filter; layer baru di-render ulang saat heatmap aktif.
+ */
+export function setHeatmapData(pelangganFiltered) {
     lastPoints = buildHeatmapPoints(pelangganFiltered);
+    renderHeatmapIfActive();
 }
 
-// RENDER HANYA SAAT AKTIF
-function renderHeatmapIfActive(map) {
-    if (!heatmapLayer) return;
-    if (!map.hasLayer(heatmapLayer)) return;
+export function renderHeatmapIfActive() {
+    if (!heatmapLayer?._map) return;
 
+    const zoom = heatmapLayer._map.getZoom();
+    const { radius, blur } = HEATMAP_ZOOM_STYLES.find((style) => zoom <= style.maxZoom);
+    heatmapLayer.setOptions({ radius, blur });
     heatmapLayer.setLatLngs(lastPoints);
 }
-
-function updateHeatmapRadiusByZoom(map) {
-    if (!heatmapLayer) return;
-
-    const zoom = map.getZoom();
-    let radius, blur;
-
-    if (zoom <= 10) {
-        radius = 45; blur = 30;
-    } else if (zoom <= 12) {
-        radius = 35; blur = 24;
-    } else if (zoom <= 14) {
-        radius = 28; blur = 18;
-    } else if (zoom <= 16) {
-        radius = 20; blur = 12;
-    } else {
-        radius = 12; blur = 7;
-    }
-
-    heatmapLayer.setOptions({ radius, blur });
-}
-
-export { initHeatmapLayer, setHeatmapData, renderHeatmapIfActive, updateHeatmapRadiusByZoom };

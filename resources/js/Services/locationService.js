@@ -1,91 +1,55 @@
-let locationState = {
-    active: false,
+const LOCATION_COLOR = "#0d6efd";
+
+const tracking = {
+    watchId: null,
     marker: null,
     accuracyCircle: null,
-    watchId: null,
-    lastLatLng: null,
+    centerOnNextFix: false,
 };
 
-export function setWatchId(id) {
-    locationState.watchId = id;
+function getCurrentPosition(options) {
+    return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+            reject(new Error("Geolocation tidak didukung browser"));
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(resolve, reject, options);
+    });
 }
 
-export function updatePosition(latlng) {
-    locationState.lastLatLng = latlng;
+export async function getCurrentLatLng() {
+    const pos = await getCurrentPosition({ enableHighAccuracy: true, timeout: 55000, maximumAge: 30000 });
+    return L.latLng(pos.coords.latitude, pos.coords.longitude);
 }
 
-export function getLastPosition() {
-    return locationState.lastLatLng;
-}
+function updateLocationLayers(map, pos) {
+    const latlng = [pos.coords.latitude, pos.coords.longitude];
 
-export function clearTracking(map) {
-    if (locationState.watchId !== null) {
-        navigator.geolocation.clearWatch(locationState.watchId);
+    if (!tracking.marker) {
+        tracking.marker = L.circleMarker(latlng, {
+            radius: 6,
+            color: LOCATION_COLOR,
+            weight: 2,
+            fillColor: LOCATION_COLOR,
+            fillOpacity: 1,
+        }).addTo(map);
+
+        tracking.accuracyCircle = L.circle(latlng, {
+            radius: pos.coords.accuracy,
+            color: LOCATION_COLOR,
+            weight: 1,
+            fillColor: LOCATION_COLOR,
+            fillOpacity: 0.15,
+        }).addTo(map);
+    } else {
+        tracking.marker.setLatLng(latlng);
+        tracking.accuracyCircle.setLatLng(latlng).setRadius(pos.coords.accuracy);
     }
 
-    if (locationState.marker && map) map.removeLayer(locationState.marker);
-    if (locationState.accuracyCircle && map) map.removeLayer(locationState.accuracyCircle);
-
-    locationState.active = false;
-    locationState.marker = null;
-    locationState.accuracyCircle = null;
-    locationState.watchId = null;
-}
-
-export function isTrackingActive() {
-    return locationState.active;
-}
-
-export function getCurrentLocationLayers() {
-    return {
-        marker: locationState.marker,
-        accuracyCircle: locationState.accuracyCircle,
-    };
-}
-
-export function setLocation(marker, circle) {
-    locationState.active = true;
-    locationState.marker = marker;
-    locationState.accuracyCircle = circle;
-}
-
-export function clearLocation(map) {
-    if (locationState.marker && map) map.removeLayer(locationState.marker);
-    if (locationState.accuracyCircle && map) map.removeLayer(locationState.accuracyCircle);
-
-    locationState.active = false;
-    locationState.marker = null;
-    locationState.accuracyCircle = null;
-}
-
-export function hasLocation() {
-    return locationState.active;
-}
-
-export function showMyLocation(map) {
-    startLiveTracking(map);
-
-    const wait = setInterval(() => {
-        const pos = getLastPosition();
-        if (!pos) return;
-
-        clearInterval(wait);
-
-        map.setView(pos, 14, {
-            animate: true,
-            duration: 0.5,
-        });
-    }, 300);
-}
-
-export function lokasiSaya(map) {
-    startLiveTracking(map);
-
-    const wait = setInterval(() => {
-        const pos = getLastPosition();
-        if (!pos) return;
-        clearInterval(wait);
-    }, 300);
+    if (tracking.centerOnNextFix) {
+        tracking.centerOnNextFix = false;
+        map.setView(latlng, 14, { animate: true, duration: 0.5 });
+    }
 }
 
 export function startLiveTracking(map) {
@@ -94,59 +58,24 @@ export function startLiveTracking(map) {
         return;
     }
 
-    if (isTrackingActive()) return;
+    if (tracking.watchId !== null) return;
 
-    const watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-            const latlng = [pos.coords.latitude, pos.coords.longitude];
-            updatePosition(latlng);
-
-            if (!isTrackingActive()) {
-                const marker = L.circleMarker(latlng, {
-                    radius: 6,
-                    color: "#0d6efd",
-                    weight: 2,
-                    fillColor: "#0d6efd",
-                    fillOpacity: 1,
-                }).addTo(map);
-
-                const accuracy = L.circle(latlng, {
-                    radius: pos.coords.accuracy,
-                    color: "#0d6efd",
-                    weight: 1,
-                    fillColor: "#0d6efd",
-                    fillOpacity: 0.15,
-                }).addTo(map);
-
-                setLocation(marker, accuracy);
-            } else {
-                const { marker, accuracyCircle } = getCurrentLocationLayers();
-
-                marker.setLatLng(latlng);
-                accuracyCircle.setLatLng(latlng);
-                accuracyCircle.setRadius(pos.coords.accuracy);
-            }
-        },
-        (err) => {
-            console.error("[GPS ERROR]", err.message);
-        },
-        {
-            enableHighAccuracy: true,
-            maximumAge: 1000,
-            timeout: 10000,
-        },
+    tracking.watchId = navigator.geolocation.watchPosition(
+        (pos) => updateLocationLayers(map, pos),
+        (err) => console.error("[GPS ERROR]", err.message),
+        { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 },
     );
-
-    setWatchId(watchId);
 }
 
-export function stopLiveTracking(map) {
-    clearTracking(map);
-}
+/**
+ * Mulai live tracking lalu pusatkan peta ke lokasi petugas begitu posisi diketahui.
+ */
+export function showMyLocation(map) {
+    if (tracking.marker) {
+        map.setView(tracking.marker.getLatLng(), 14, { animate: true, duration: 0.5 });
+        return;
+    }
 
-export function centerToMyLocation(map) {
-    const { marker } = getCurrentLocationLayers();
-    if (!marker) return;
-
-    map.panTo(marker.getLatLng(), { animate: true });
+    tracking.centerOnNextFix = true;
+    startLiveTracking(map);
 }

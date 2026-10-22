@@ -1,80 +1,55 @@
-import { highlightMarker } from "../MapCore/markers.js";
 import { startRouting } from "../MapCore/routeLayer.js";
-import { getRole, STATUS_KUNJUNGAN } from "../Config/index.js";
+import { getRole, getStatusMeta, STATUS_KUNJUNGAN } from "../Config/index.js";
 import { updateStatusKunjungan } from "../Services/api.js";
-
-// Helper copy IDPEL
-window.copyIdpel = function (idpel, btn) {
-    if (!navigator.clipboard) return;
-    navigator.clipboard.writeText(idpel).then(() => {
-        const icon = btn.querySelector("i");
-        if (icon) {
-            icon.className = "bx bx-check text-success";
-            setTimeout(() => {
-                icon.className = "bx bx-copy";
-            }, 1500);
-        }
-    });
-};
+import { escapeHtml, setButtonLoading } from "./html.js";
+import { showSimpleErrorToast } from "./toast.js";
 
 export function renderPopupHTML(p) {
-    const role = getRole();
-    const isPetugas = role === "petugas";
+    const isPetugas = getRole() === "petugas";
 
-    // Format phone / WhatsApp
-    let phoneHtml = "";
-    if (p.no_hp) {
-        phoneHtml = `
-            <div class="popup-phone">
-                <span><i class="bx bx-phone me-1"></i> ${p.no_hp}</span>
-            </div>
-        `;
-    }
+    const phoneHtml = p.no_hp
+        ? `<div class="popup-phone"><span><i class="bx bx-phone me-1"></i> ${escapeHtml(p.no_hp)}</span></div>`
+        : "";
 
-    // Status Badge if available (in Tugas Kunjungan view)
     let statusPill = "";
     if (p.status_kunjungan) {
-        let badgeColor = "bg-primary";
-        let statusLabel = "Belum Dikunjungi";
-
-        if (p.status_kunjungan === STATUS_KUNJUNGAN.SUDAH) {
-            badgeColor = "bg-success";
-            statusLabel = "Sudah Dikunjungi";
-        } else if (p.status_kunjungan === STATUS_KUNJUNGAN.DIPROSES) {
-            badgeColor = "bg-warning text-dark";
-            statusLabel = "Sedang Diproses";
-        }
-
-        statusPill = `<span class="badge ${badgeColor} font-size-11 mb-2">${statusLabel}</span>`;
+        const { badgeClass, label } = getStatusMeta(p.status_kunjungan);
+        statusPill = `<span class="badge ${badgeClass} font-size-11 mb-2">${label}</span>`;
     }
 
-    // Petugas update button
-    let petugasActionHtml = "";
-    if (isPetugas && p.id_detail_tugas) {
-        const isCompleted = p.status_kunjungan === STATUS_KUNJUNGAN.SUDAH;
-        if (!isCompleted) {
-            petugasActionHtml = `
-                <button class="btn btn-success w-100" onclick="handleSelesaiKunjungan(${p.id_detail_tugas}, this)">
-                    <i class="bx bx-check-double me-1"></i>
-                    <span class="label">Update Status Kunjungan</span>
-                    <span class="spinner d-none spinner-border spinner-border-sm"></span>
-                </button>
-            `;
-        }
-    }
+    const routeButtonHtml = isPetugas
+        ? `
+            <button type="button" class="btn primary btn-navigate d-flex align-items-center justify-content-center gap-1">
+                <i class="bx bx-directions font-size-16"></i>
+                <span class="label">Rute ke Sini</span>
+                <span class="spinner d-none spinner-border spinner-border-sm"></span>
+            </button>
+        `
+        : "";
+
+    const canUpdateStatus = isPetugas && p.id_detail_tugas && p.status_kunjungan !== STATUS_KUNJUNGAN.SUDAH;
+    const updateStatusHtml = canUpdateStatus
+        ? `
+            <button type="button" class="btn btn-success w-100 btn-update-status" data-id-detail="${escapeHtml(p.id_detail_tugas)}">
+                <i class="bx bx-check-double me-1"></i>
+                <span class="label">Update Status Kunjungan</span>
+                <span class="spinner d-none spinner-border spinner-border-sm"></span>
+            </button>
+        `
+        : "";
 
     return `
         <div class="dark-card">
             <div class="dark-card-header">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="idpel-tag">
-                        <i class="bx bx-barcode"></i> ${p.id_pelanggan || "PLN"}
+                        <i class="bx bx-barcode"></i> ${escapeHtml(p.id_pelanggan || "PLN")}
                     </span>
-                    <button type="button" class="btn-copy-idpel" onclick="copyIdpel('${p.id_pelanggan || ""}', this)" title="Salin IDPEL">
+                    <button type="button" class="btn-copy-idpel" data-idpel="${escapeHtml(p.id_pelanggan)}" title="Salin IDPEL">
                         <i class="bx bx-copy"></i>
                     </button>
                 </div>
-                <h4 class="customer-name">${p.nama}</h4>
+                <h4 class="customer-name">${escapeHtml(p.nama)}</h4>
             </div>
 
             <div class="dark-card-body">
@@ -82,10 +57,10 @@ export function renderPopupHTML(p) {
 
                 <div class="popup-pill-row">
                     <span class="popup-pill tarif">
-                        <i class="bx bx-tag-alt"></i> ${p.golongan_tarif}
+                        <i class="bx bx-tag-alt"></i> ${escapeHtml(p.golongan_tarif)}
                     </span>
                     <span class="popup-pill daya">
-                        <i class="bx bx-bolt-circle"></i> ${p.daya} VA
+                        <i class="bx bx-bolt-circle"></i> ${escapeHtml(p.daya)} VA
                     </span>
                 </div>
 
@@ -93,26 +68,45 @@ export function renderPopupHTML(p) {
 
                 <div class="address">
                     <i class="bx bx-map-pin text-danger font-size-15 flex-shrink-0 mt-1"></i>
-                    <span>${p.alamat}</span>
+                    <span>${escapeHtml(p.alamat)}</span>
                 </div>
             </div>
 
             <div class="dark-card-footer">
-                ${isPetugas ? `
-                <button class="btn primary btn-navigate d-flex align-items-center justify-content-center gap-1">
-                    <i class="bx bx-directions font-size-16"></i>
-                    <span class="label">Rute ke Sini</span>
-                    <span class="spinner d-none spinner-border spinner-border-sm"></span>
-                </button>
-                ` : ''}
-                ${petugasActionHtml}
+                ${routeButtonHtml}
+                ${updateStatusHtml}
             </div>
         </div>
     `;
 }
 
-// Handler inline konfirmasi selesai kunjungan untuk petugas
-window.handleSelesaiKunjungan = async function (idDetail, btnElement) {
+async function copyIdpel(btn) {
+    if (!navigator.clipboard) return;
+
+    await navigator.clipboard.writeText(btn.dataset.idpel);
+
+    const icon = btn.querySelector("i");
+    if (icon) {
+        icon.className = "bx bx-check text-success";
+        setTimeout(() => {
+            icon.className = "bx bx-copy";
+        }, 1500);
+    }
+}
+
+async function navigateTo(map, btn, latlng) {
+    setButtonLoading(btn, true);
+    try {
+        await startRouting(map, latlng);
+    } catch (err) {
+        console.error("Routing dibatalkan:", err);
+        showSimpleErrorToast("Gagal membuat rute. Pastikan GPS aktif dan izin lokasi diberikan.");
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
+
+async function confirmUpdateStatus(btn) {
     const result = await Swal.fire({
         title: "Perbarui Status Kunjungan?",
         text: "Pastikan Anda sudah tiba atau menyelesaikan inspeksi di lokasi pelanggan.",
@@ -124,66 +118,36 @@ window.handleSelesaiKunjungan = async function (idDetail, btnElement) {
         confirmButtonText: "Ya, Lanjutkan",
     });
 
-    if (result.isConfirmed) {
-        const label = btnElement.querySelector(".label");
-        const spinner = btnElement.querySelector(".spinner");
-        label?.classList.add("d-none");
-        spinner?.classList.remove("d-none");
-        btnElement.disabled = true;
+    if (!result.isConfirmed) return;
 
-        try {
-            await updateStatusKunjungan(idDetail);
-            Swal.fire({
-                icon: "success",
-                title: "Berhasil!",
-                text: "Status kunjungan berhasil diperbarui.",
-                timer: 1500,
-                showConfirmButton: false,
-            }).then(() => location.reload());
-        } catch (error) {
-            Swal.fire("Gagal", error.message, "error");
-            label?.classList.remove("d-none");
-            spinner?.classList.add("d-none");
-            btnElement.disabled = false;
-        }
+    setButtonLoading(btn, true);
+    try {
+        await updateStatusKunjungan(btn.dataset.idDetail);
+        await Swal.fire({
+            icon: "success",
+            title: "Berhasil!",
+            text: "Status kunjungan berhasil diperbarui.",
+            timer: 1500,
+            showConfirmButton: false,
+        });
+        location.reload();
+    } catch (error) {
+        Swal.fire("Gagal", error.message, "error");
+        setButtonLoading(btn, false);
     }
-};
-
-function setRoutingLoading(btn, loading) {
-    const label = btn.querySelector(".label");
-    const spinner = btn.querySelector(".spinner");
-    if (label) label.style.display = loading ? "none" : "inline";
-    if (spinner) spinner.classList.toggle("d-none", !loading);
-    btn.disabled = loading;
 }
 
+/**
+ * Hubungkan tombol-tombol di dalam popup (salin IDPEL, rute, update status) setiap popup dibuka.
+ */
 export function bindPopupEvents(map) {
     map.on("popupopen", (e) => {
         const popupEl = e.popup.getElement();
+        const latlng = e.popup.getLatLng();
         if (!popupEl) return;
 
-        const marker = e.popup._source;
-        if (!marker) return;
-
-        // Tombol navigasi rute
-        const btnNav = popupEl.querySelector(".btn-navigate");
-        if (btnNav) {
-            btnNav.onclick = async () => {
-                setRoutingLoading(btnNav, true);
-                try {
-                    await startRouting(map, marker.getLatLng());
-                } finally {
-                    setRoutingLoading(btnNav, false);
-                }
-            };
-        }
-
-        // Tombol highlight jika ada
-        const btnHighlight = popupEl.querySelector(".btn-highlight");
-        if (btnHighlight) {
-            btnHighlight.addEventListener("click", () => {
-                highlightMarker(marker);
-            });
-        }
+        popupEl.querySelector(".btn-copy-idpel")?.addEventListener("click", (event) => copyIdpel(event.currentTarget));
+        popupEl.querySelector(".btn-navigate")?.addEventListener("click", (event) => navigateTo(map, event.currentTarget, latlng));
+        popupEl.querySelector(".btn-update-status")?.addEventListener("click", (event) => confirmUpdateStatus(event.currentTarget));
     });
 }

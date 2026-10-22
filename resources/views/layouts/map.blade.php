@@ -8,11 +8,12 @@
     {{-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> --}}
     <meta name="base-url" content="{{ url('/') }}">
     <meta name="role" content="{{ auth()->user()->role }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
     <meta content="Themesbrand" name="author" />
     <!-- App favicon -->
-    <link rel="shortcut icon" href="assets/images/favicon.ico">
+    <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}">
 
     <!-- Bootstrap Css -->
     <link href="{{ asset('css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
@@ -22,7 +23,8 @@
     <link href="{{ asset('css/app.min.css') }}" id="app-style" rel="stylesheet" type="text/css" />
 
     <!-- Leaflet dependencies (Loaded via Vite) -->
-    <link href="{{ asset('css/custom.css?v=2') }}" id="custom-map-style" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('libs/sweetalert2/sweetalert2.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('css/custom.css?v=3') }}" id="custom-map-style" rel="stylesheet" type="text/css" />
     @stack('style')
 </head>
 
@@ -327,6 +329,7 @@
     <script src="{{ asset('libs/metismenu/metisMenu.min.js') }}"></script>
     <script src="{{ asset('libs/simplebar/simplebar.min.js') }}"></script>
     <script src="{{ asset('libs/node-waves/waves.min.js') }}"></script>
+    <script src="{{ asset('libs/sweetalert2/sweetalert2.min.js') }}"></script>
 
 
 
