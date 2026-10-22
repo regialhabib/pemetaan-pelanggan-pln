@@ -1,6 +1,7 @@
 import { showMyLocation } from "../Services/locationService.js";
 import { clearRoute } from "../MapCore/routeLayer.js";
 import { resetMapView } from "../MapCore/markers.js";
+import { STATUS_KUNJUNGAN } from "../Config/index.js";
 
 function getGlassStyle(isCircle = true, isDanger = false) {
     if (isDanger) {
@@ -106,8 +107,8 @@ export function addMonitoringStatsControl(map, pelanggan) {
     let belum = 0;
 
     pelanggan.forEach(p => {
-        if (p.status_kunjungan === "sudah") sudah++;
-        else if (p.status_kunjungan === "diproses") diproses++;
+        if (p.status_kunjungan === STATUS_KUNJUNGAN.SUDAH) sudah++;
+        else if (p.status_kunjungan === STATUS_KUNJUNGAN.DIPROSES) diproses++;
         else belum++;
     });
 

@@ -7,6 +7,7 @@ import {
     updateHeatmapRadiusByZoom,
 } from "./heatmap.js";
 import { renderPopupHTML, bindPopupEvents } from "../UI/popup.js";
+import { STATUS_KUNJUNGAN } from "../Config/index.js";
 
 let markersLayer;
 let markers = [];
@@ -45,10 +46,10 @@ export function addMarkersBatch(map, pelangganList) {
             let color = "#f46a6a"; // Default: belum (merah)
             let iconClass = "bx-x";
             
-            if (p.status_kunjungan === "sudah") {
+            if (p.status_kunjungan === STATUS_KUNJUNGAN.SUDAH) {
                 color = "#34c38f"; // hijau
                 iconClass = "bx-check-double";
-            } else if (p.status_kunjungan === "diproses") {
+            } else if (p.status_kunjungan === STATUS_KUNJUNGAN.DIPROSES) {
                 color = "#f1b44c"; // kuning
                 iconClass = "bx-time-five";
             }
